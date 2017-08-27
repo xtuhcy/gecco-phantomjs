@@ -1,29 +1,79 @@
 package com.geccocrawler.gecco.downloader;
 
-import org.openqa.selenium.phantomjs.PhantomJSDriver;
+import java.util.Map;
+import java.util.concurrent.TimeUnit;
 
+import org.apache.http.HttpHost;
+import org.openqa.selenium.Proxy;
+import org.openqa.selenium.Proxy.ProxyType;
+import org.openqa.selenium.phantomjs.PhantomJSDriver;
+import org.openqa.selenium.phantomjs.PhantomJSDriverService;
+import org.openqa.selenium.remote.CapabilityType;
+import org.openqa.selenium.remote.DesiredCapabilities;
+
+import com.geccocrawler.gecco.downloader.proxy.Proxys;
+import com.geccocrawler.gecco.downloader.proxy.ProxysContext;
 import com.geccocrawler.gecco.request.HttpRequest;
 import com.geccocrawler.gecco.response.HttpResponse;
+import com.geccocrawler.gecco.spider.SpiderThreadLocal;
 
 @com.geccocrawler.gecco.annotation.Downloader("phantomJSDownloader")
 public class PhantomJSDownloader implements Downloader {
 
-	private PhantomJSDriver webDriver;
-	
-	public PhantomJSDownloader() {
-		webDriver = new PhantomJSDriver();
-	}
-	
 	@Override
 	public HttpResponse download(HttpRequest request, int timeout) throws DownloadException {
-		webDriver.get("http://ip.zdaye.com/");
-		return null;
+		DesiredCapabilities dcaps = DesiredCapabilities.phantomjs();
+        dcaps.setCapability("acceptSslCerts", true);
+        dcaps.setJavascriptEnabled(true);
+        dcaps.setCapability(PhantomJSDriverService.PHANTOMJS_EXECUTABLE_PATH_PROPERTY, "D:\\phantomjs-2.1.1-windows\\bin\\phantomjs.exe");
+        
+        //header
+  		boolean isMobile = SpiderThreadLocal.get().getEngine().isMobile();
+  		dcaps.setCapability(PhantomJSDriverService.PHANTOMJS_PAGE_SETTINGS_PREFIX+"userAgent", UserAgent.getUserAgent(isMobile));
+  		for(Map.Entry<String, String> entry : request.getHeaders().entrySet()) {
+  			dcaps.setCapability(PhantomJSDriverService.PHANTOMJS_PAGE_CUSTOMHEADERS_PREFIX+entry.getKey(), entry.getValue());
+  		}
+        
+        //proxy
+  		HttpHost proxy = null;
+  		Proxys proxys = ProxysContext.get();
+  		boolean isProxy = ProxysContext.isEnableProxy();
+  		if(proxys != null && isProxy) {
+  			proxy = proxys.getProxy();
+  			if(proxy != null) {
+  				Proxy proxyWebDriver = new Proxy();
+  				proxyWebDriver.setProxyType(ProxyType.MANUAL);
+  				proxyWebDriver.setAutodetect(false);
+  		        String proxyStr = proxy.getHostName()+":"+proxy.getPort();
+  		        proxyWebDriver.setHttpProxy(proxyStr);
+  		        dcaps.setCapability(CapabilityType.PROXY, proxyWebDriver);
+  			}
+  		}
+        
+        PhantomJSDriver webDriver = new PhantomJSDriver(dcaps);
+        webDriver.manage().timeouts().implicitlyWait(3, TimeUnit.SECONDS);
+        webDriver.manage().timeouts().pageLoadTimeout(timeout, TimeUnit.MICROSECONDS);
+        try {
+        	webDriver.get(request.getUrl());
+        	System.out.println(webDriver.getErrorHandler().isIncludeServerErrors());
+			String content = webDriver.getPageSource();
+			HttpResponse resp = new HttpResponse();
+			resp.setStatus(200);
+			resp.setContent(content);
+			//resp.setContentType(contentType);
+			//resp.setCharset(charset);
+			return resp;
+		} catch (Exception e) {
+			e.printStackTrace();
+			return null;
+		} finally {
+			webDriver.quit();
+		}
 	}
 
 	@Override
 	public void shutdown() {
-		// TODO Auto-generated method stub
-
+		
 	}
 
 }
