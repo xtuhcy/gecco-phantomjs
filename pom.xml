@@ -1,23 +1,29 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
-	<modelVersion>4.0.0</modelVersion>
-	<groupId>com.geccocrawler</groupId>
-	<artifactId>gecco-phantomjs</artifactId>
-	<version>1.0.0-SNAPSHOT</version>
-	<dependencies>
-		<dependency>
-			<groupId>com.geccocrawler</groupId>
-			<artifactId>gecco</artifactId>
-			<version>1.2.10</version>
-		</dependency>
-		<dependency>
-			<groupId>org.seleniumhq.selenium</groupId>
-			<artifactId>selenium-java</artifactId>
-			<version>3.4.0</version>
-		</dependency>
-	</dependencies>
-	
-	<build>
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+    <groupId>com.geccocrawler</groupId>
+    <artifactId>gecco-phantomjs</artifactId>
+    <version>1.0.0-SNAPSHOT</version>
+    <dependencies>
+        <dependency>
+            <groupId>com.geccocrawler</groupId>
+            <artifactId>gecco</artifactId>
+            <version>1.2.10</version>
+            <exclusions>
+                <exclusion>
+                    <artifactId>guava</artifactId>
+                    <groupId>com.google.guava</groupId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+        <dependency>
+            <groupId>org.seleniumhq.selenium</groupId>
+            <artifactId>selenium-java</artifactId>
+            <version>3.4.0</version>
+        </dependency>
+    </dependencies>
+
+    <build>
         <pluginManagement>
             <plugins>
                 <plugin>
@@ -33,9 +39,6 @@
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-surefire-plugin</artifactId>
                     <configuration>
-                        <source>1.8</source>
-                        <target>1.8</target>
-                        <encoding>UTF-8</encoding>
                         <skip>true</skip>
                     </configuration>
                 </plugin>
@@ -148,9 +151,6 @@
                     <plugin>
                         <groupId>org.apache.maven.plugins</groupId>
                         <artifactId>maven-source-plugin</artifactId>
-                        <configuration>
-                            <encoding>UTF-8</encoding>
-                        </configuration>
                         <executions>
                             <execution>
                                 <id>attach-sources</id>

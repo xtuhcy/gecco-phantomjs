@@ -17,6 +17,11 @@ import com.geccocrawler.gecco.request.HttpRequest;
 import com.geccocrawler.gecco.response.HttpResponse;
 import com.geccocrawler.gecco.spider.SpiderThreadLocal;
 
+/**
+ * 使用phantomjs下载页面，基于selenium库调用
+ *
+ * @author xtuhcy
+ */
 @com.geccocrawler.gecco.annotation.Downloader("phantomJSDownloader")
 public class PhantomJSDownloader implements Downloader {
 
@@ -25,7 +30,7 @@ public class PhantomJSDownloader implements Downloader {
 		DesiredCapabilities dcaps = DesiredCapabilities.phantomjs();
         dcaps.setCapability("acceptSslCerts", true);
         dcaps.setJavascriptEnabled(true);
-        dcaps.setCapability(PhantomJSDriverService.PHANTOMJS_EXECUTABLE_PATH_PROPERTY, "D:\\phantomjs-2.1.1-windows\\bin\\phantomjs.exe");
+        dcaps.setCapability(PhantomJSDriverService.PHANTOMJS_EXECUTABLE_PATH_PROPERTY, "C:\\dev\\phantomjs-2.1.1-windows\\bin\\phantomjs.exe");
         
         //header
   		boolean isMobile = SpiderThreadLocal.get().getEngine().isMobile();
@@ -52,7 +57,7 @@ public class PhantomJSDownloader implements Downloader {
         
         PhantomJSDriver webDriver = new PhantomJSDriver(dcaps);
         webDriver.manage().timeouts().implicitlyWait(3, TimeUnit.SECONDS);
-        webDriver.manage().timeouts().pageLoadTimeout(timeout, TimeUnit.MICROSECONDS);
+        webDriver.manage().timeouts().pageLoadTimeout(timeout/1000, TimeUnit.SECONDS);
         try {
         	webDriver.get(request.getUrl());
         	System.out.println(webDriver.getErrorHandler().isIncludeServerErrors());
